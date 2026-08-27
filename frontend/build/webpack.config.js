@@ -52,7 +52,14 @@ module.exports = (env) => {
         'node_modules'
       ],
       alias: {
-        jquery: 'jquery/dist/jquery.min'
+        jquery: 'jquery/dist/jquery.min',
+        // Node-only optional requires inside the SignalR browser build; never
+        // executed in a browser, so keep them out of the bundle entirely.
+        'fetch-cookie': false,
+        eventsource: false,
+        'node-fetch': false,
+        'abort-controller': false,
+        ws: false
       },
       fallback: {
         buffer: false,
