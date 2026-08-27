@@ -7,6 +7,7 @@ const LiveReloadPlugin = require('webpack-livereload-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const CompressAssetsPlugin = require('./plugins/CompressAssetsPlugin');
 
 module.exports = (env) => {
   const uiFolder = 'UI';
@@ -147,7 +148,9 @@ module.exports = (env) => {
 
       new ForkTsCheckerWebpackPlugin(),
 
-      new LiveReloadPlugin()
+      new LiveReloadPlugin(),
+
+      ...(isProduction ? [new CompressAssetsPlugin()] : [])
     ],
 
     resolveLoader: {
