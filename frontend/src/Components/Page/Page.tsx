@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppUpdatedModal from 'App/AppUpdatedModal';
 import ColorImpairedContext from 'App/ColorImpairedContext';
 import ConnectionLostModal from 'App/ConnectionLostModal';
 import AppState from 'App/State/AppState';
-import SignalRConnector from 'Components/SignalRConnector';
 import AuthenticationRequiredModal from 'FirstRun/AuthenticationRequiredModal';
 import useAppPage from 'Helpers/Hooks/useAppPage';
 import { saveDimensions } from 'Store/Actions/appActions';
@@ -16,6 +15,10 @@ import PageHeader from './Header/PageHeader';
 import LoadingPage from './LoadingPage';
 import PageSidebar from './Sidebar/PageSidebar';
 import styles from './Page.css';
+
+// The realtime connector renders nothing and only needs to attach once the
+// page is up, so its transport library stays off the boot path.
+const SignalRConnector = lazy(() => import('Components/SignalRConnector'));
 
 interface PageProps {
   children: React.ReactNode;
@@ -87,7 +90,9 @@ function Page({ children }: PageProps) {
   return (
     <ColorImpairedContext.Provider value={enableColorImpairedMode}>
       <div className={styles.page}>
-        <SignalRConnector />
+        <Suspense fallback={null}>
+          <SignalRConnector />
+        </Suspense>
 
         <PageHeader isSmallScreen={isSmallScreen} />
 
