@@ -92,6 +92,13 @@ module.exports = (env) => {
     },
 
     plugins: [
+      // Locale data is loaded on demand for the configured language (see
+      // useInitializeLanguage), so the eager bundle only carries the default.
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^\.\/locale$/,
+        contextRegExp: /moment$/
+      }),
+
       new webpack.DefinePlugin({
         __DEV__: !isProduction,
         'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development')
