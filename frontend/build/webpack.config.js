@@ -7,6 +7,7 @@ const LiveReloadPlugin = require('webpack-livereload-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const CompressAssetsPlugin = require('./plugins/CompressAssetsPlugin');
 
 module.exports = (env) => {
   const uiFolder = 'UI';
@@ -51,7 +52,14 @@ module.exports = (env) => {
         'node_modules'
       ],
       alias: {
-        jquery: 'jquery/dist/jquery.min'
+        jquery: 'jquery/dist/jquery.min',
+        // Node-only optional requires inside the SignalR browser build; never
+        // executed in a browser, so keep them out of the bundle entirely.
+        'fetch-cookie': false,
+        eventsource: false,
+        'node-fetch': false,
+        'abort-controller': false,
+        ws: false
       },
       fallback: {
         buffer: false,
@@ -84,6 +92,13 @@ module.exports = (env) => {
     },
 
     plugins: [
+      // Locale data is loaded on demand for the configured language (see
+      // useInitializeLanguage), so the eager bundle only carries the default.
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^\.\/locale$/,
+        contextRegExp: /moment$/
+      }),
+
       new webpack.DefinePlugin({
         __DEV__: !isProduction,
         'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development')
@@ -147,7 +162,9 @@ module.exports = (env) => {
 
       new ForkTsCheckerWebpackPlugin(),
 
-      new LiveReloadPlugin()
+      new LiveReloadPlugin(),
+
+      ...(isProduction ? [new CompressAssetsPlugin()] : [])
     ],
 
     resolveLoader: {

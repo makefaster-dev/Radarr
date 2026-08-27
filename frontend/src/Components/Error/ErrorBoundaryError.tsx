@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import StackTrace from 'stacktrace-js';
+import type { StackFrame } from 'stacktrace-js';
 import translate from 'Utilities/String/translate';
 import styles from './ErrorBoundaryError.css';
 
@@ -24,14 +24,16 @@ function ErrorBoundaryError(props: ErrorBoundaryErrorProps) {
     info,
   } = props;
 
-  const [detailedError, setDetailedError] = useState<
-    StackTrace.StackFrame[] | null
-  >(null);
+  const [detailedError, setDetailedError] = useState<StackFrame[] | null>(null);
 
   useEffect(() => {
     if (error) {
-      StackTrace.fromError(error).then((de) => {
-        setDetailedError(de);
+      // The stack-mapping library is only needed once an error is actually
+      // shown, so it stays out of the boot bundle.
+      import('stacktrace-js').then(({ default: StackTrace }) => {
+        StackTrace.fromError(error).then((de) => {
+          setDetailedError(de);
+        });
       });
     } else {
       setDetailedError(null);

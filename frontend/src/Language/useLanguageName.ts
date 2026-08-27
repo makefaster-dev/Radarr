@@ -26,7 +26,23 @@ export const useInitializeLanguage = () => {
   const { data } = useLanguage();
 
   useEffect(() => {
-    moment.locale(data?.identifier);
+    const identifier = data?.identifier;
+
+    if (!identifier || identifier === 'en') {
+      moment.locale('en');
+      return;
+    }
+
+    // Locale data is not bundled eagerly; fetch the configured locale on
+    // demand and fall back to the default when there is no data for it.
+    import(
+      /* webpackChunkName: 'moment-locale-[request]' */ `moment/locale/${identifier}`
+    )
+      .then(
+        () => moment.locale(identifier),
+        () => moment.locale(identifier)
+      )
+      .catch(() => undefined);
   }, [data]);
 };
 

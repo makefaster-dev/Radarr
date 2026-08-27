@@ -1,39 +1,69 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Redirect, Route } from 'react-router-dom';
-import Blocklist from 'Activity/Blocklist/Blocklist';
-import History from 'Activity/History/History';
-import Queue from 'Activity/Queue/Queue';
-import AddNewMovieConnector from 'AddMovie/AddNewMovie/AddNewMovieConnector';
-import ImportMovies from 'AddMovie/ImportMovie/ImportMovies';
-import CalendarPage from 'Calendar/CalendarPage';
-import CollectionConnector from 'Collection/CollectionConnector';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import NotFound from 'Components/NotFound';
 import Switch from 'Components/Router/Switch';
-import DiscoverMovieConnector from 'DiscoverMovie/DiscoverMovieConnector';
-import MovieDetailsPage from 'Movie/Details/MovieDetailsPage';
 import MovieIndex from 'Movie/Index/MovieIndex';
-import CustomFormatSettingsPage from 'Settings/CustomFormats/CustomFormatSettingsPage';
-import DownloadClientSettingsConnector from 'Settings/DownloadClients/DownloadClientSettingsConnector';
-import GeneralSettingsConnector from 'Settings/General/GeneralSettingsConnector';
-import ImportListSettings from 'Settings/ImportLists/ImportListSettings';
-import IndexerSettings from 'Settings/Indexers/IndexerSettings';
-import MediaManagement from 'Settings/MediaManagement/MediaManagement';
-import MetadataSettings from 'Settings/Metadata/MetadataSettings';
-import NotificationSettings from 'Settings/Notifications/NotificationSettings';
-import Profiles from 'Settings/Profiles/Profiles';
-import QualityConnector from 'Settings/Quality/QualityConnector';
-import Settings from 'Settings/Settings';
-import TagSettings from 'Settings/Tags/TagSettings';
-import UISettingsConnector from 'Settings/UI/UISettingsConnector';
-import BackupsConnector from 'System/Backup/BackupsConnector';
-import LogsTableConnector from 'System/Events/LogsTableConnector';
-import Logs from 'System/Logs/Logs';
-import Status from 'System/Status/Status';
-import Tasks from 'System/Tasks/Tasks';
-import Updates from 'System/Updates/Updates';
 import getPathWithUrlBase from 'Utilities/getPathWithUrlBase';
-import CutoffUnmet from 'Wanted/CutoffUnmet/CutoffUnmet';
-import Missing from 'Wanted/Missing/Missing';
+
+// Every route other than the movie index is loaded on demand, so the code the
+// entry page needs is all the boot bundle carries.
+const Blocklist = lazy(() => import('Activity/Blocklist/Blocklist'));
+const History = lazy(() => import('Activity/History/History'));
+const Queue = lazy(() => import('Activity/Queue/Queue'));
+const AddNewMovieConnector = lazy(
+  () => import('AddMovie/AddNewMovie/AddNewMovieConnector')
+);
+const ImportMovies = lazy(() => import('AddMovie/ImportMovie/ImportMovies'));
+const CalendarPage = lazy(() => import('Calendar/CalendarPage'));
+const CollectionConnector = lazy(
+  () => import('Collection/CollectionConnector')
+);
+const DiscoverMovieConnector = lazy(
+  () => import('DiscoverMovie/DiscoverMovieConnector')
+);
+const MovieDetailsPage = lazy(() => import('Movie/Details/MovieDetailsPage'));
+const CustomFormatSettingsPage = lazy(
+  () => import('Settings/CustomFormats/CustomFormatSettingsPage')
+);
+const DownloadClientSettingsConnector = lazy(
+  () => import('Settings/DownloadClients/DownloadClientSettingsConnector')
+);
+const GeneralSettingsConnector = lazy(
+  () => import('Settings/General/GeneralSettingsConnector')
+);
+const ImportListSettings = lazy(
+  () => import('Settings/ImportLists/ImportListSettings')
+);
+const IndexerSettings = lazy(() => import('Settings/Indexers/IndexerSettings'));
+const MediaManagement = lazy(
+  () => import('Settings/MediaManagement/MediaManagement')
+);
+const MetadataSettings = lazy(
+  () => import('Settings/Metadata/MetadataSettings')
+);
+const NotificationSettings = lazy(
+  () => import('Settings/Notifications/NotificationSettings')
+);
+const Profiles = lazy(() => import('Settings/Profiles/Profiles'));
+const QualityConnector = lazy(
+  () => import('Settings/Quality/QualityConnector')
+);
+const Settings = lazy(() => import('Settings/Settings'));
+const TagSettings = lazy(() => import('Settings/Tags/TagSettings'));
+const UISettingsConnector = lazy(
+  () => import('Settings/UI/UISettingsConnector')
+);
+const BackupsConnector = lazy(() => import('System/Backup/BackupsConnector'));
+const LogsTableConnector = lazy(
+  () => import('System/Events/LogsTableConnector')
+);
+const Logs = lazy(() => import('System/Logs/Logs'));
+const Status = lazy(() => import('System/Status/Status'));
+const Tasks = lazy(() => import('System/Tasks/Tasks'));
+const Updates = lazy(() => import('System/Updates/Updates'));
+const CutoffUnmet = lazy(() => import('Wanted/CutoffUnmet/CutoffUnmet'));
+const Missing = lazy(() => import('Wanted/Missing/Missing'));
 
 function RedirectWithUrlBase() {
   return <Redirect to={getPathWithUrlBase('/')} />;
@@ -41,116 +71,118 @@ function RedirectWithUrlBase() {
 
 function AppRoutes() {
   return (
-    <Switch>
-      {/*
-        Movies
-      */}
+    <Suspense fallback={<LoadingIndicator />}>
+      <Switch>
+        {/*
+          Movies
+        */}
 
-      <Route exact={true} path="/" component={MovieIndex} />
+        <Route exact={true} path="/" component={MovieIndex} />
 
-      {window.Radarr.urlBase && (
+        {window.Radarr.urlBase && (
+          <Route
+            exact={true}
+            path="/"
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            addUrlBase={false}
+            render={RedirectWithUrlBase}
+          />
+        )}
+
+        <Route path="/add/new" component={AddNewMovieConnector} />
+
+        <Route path="/collections" component={CollectionConnector} />
+
+        <Route path="/add/import" component={ImportMovies} />
+
+        <Route path="/add/discover" component={DiscoverMovieConnector} />
+
+        <Route path="/movie/:titleSlug" component={MovieDetailsPage} />
+
+        {/*
+          Calendar
+        */}
+
+        <Route path="/calendar" component={CalendarPage} />
+
+        {/*
+          Activity
+        */}
+
+        <Route path="/activity/history" component={History} />
+
+        <Route path="/activity/queue" component={Queue} />
+
+        <Route path="/activity/blocklist" component={Blocklist} />
+
+        {/*
+          Wanted
+        */}
+
+        <Route path="/wanted/missing" component={Missing} />
+
+        <Route path="/wanted/cutoffunmet" component={CutoffUnmet} />
+
+        {/*
+          Settings
+        */}
+
+        <Route exact={true} path="/settings" component={Settings} />
+
+        <Route path="/settings/mediamanagement" component={MediaManagement} />
+
+        <Route path="/settings/profiles" component={Profiles} />
+
+        <Route path="/settings/quality" component={QualityConnector} />
+
         <Route
-          exact={true}
-          path="/"
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          addUrlBase={false}
-          render={RedirectWithUrlBase}
+          path="/settings/customformats"
+          component={CustomFormatSettingsPage}
         />
-      )}
 
-      <Route path="/add/new" component={AddNewMovieConnector} />
+        <Route path="/settings/indexers" component={IndexerSettings} />
 
-      <Route path="/collections" component={CollectionConnector} />
+        <Route
+          path="/settings/downloadclients"
+          component={DownloadClientSettingsConnector}
+        />
 
-      <Route path="/add/import" component={ImportMovies} />
+        <Route path="/settings/importlists" component={ImportListSettings} />
 
-      <Route path="/add/discover" component={DiscoverMovieConnector} />
+        <Route path="/settings/connect" component={NotificationSettings} />
 
-      <Route path="/movie/:titleSlug" component={MovieDetailsPage} />
+        <Route path="/settings/metadata" component={MetadataSettings} />
 
-      {/*
-        Calendar
-      */}
+        <Route path="/settings/tags" component={TagSettings} />
 
-      <Route path="/calendar" component={CalendarPage} />
+        <Route path="/settings/general" component={GeneralSettingsConnector} />
 
-      {/*
-        Activity
-      */}
+        <Route path="/settings/ui" component={UISettingsConnector} />
 
-      <Route path="/activity/history" component={History} />
+        {/*
+          System
+        */}
 
-      <Route path="/activity/queue" component={Queue} />
+        <Route path="/system/status" component={Status} />
 
-      <Route path="/activity/blocklist" component={Blocklist} />
+        <Route path="/system/tasks" component={Tasks} />
 
-      {/*
-        Wanted
-      */}
+        <Route path="/system/backup" component={BackupsConnector} />
 
-      <Route path="/wanted/missing" component={Missing} />
+        <Route path="/system/updates" component={Updates} />
 
-      <Route path="/wanted/cutoffunmet" component={CutoffUnmet} />
+        <Route path="/system/events" component={LogsTableConnector} />
 
-      {/*
-        Settings
-      */}
+        <Route path="/system/logs/files" component={Logs} />
 
-      <Route exact={true} path="/settings" component={Settings} />
+        {/*
+          Not Found
+        */}
 
-      <Route path="/settings/mediamanagement" component={MediaManagement} />
-
-      <Route path="/settings/profiles" component={Profiles} />
-
-      <Route path="/settings/quality" component={QualityConnector} />
-
-      <Route
-        path="/settings/customformats"
-        component={CustomFormatSettingsPage}
-      />
-
-      <Route path="/settings/indexers" component={IndexerSettings} />
-
-      <Route
-        path="/settings/downloadclients"
-        component={DownloadClientSettingsConnector}
-      />
-
-      <Route path="/settings/importlists" component={ImportListSettings} />
-
-      <Route path="/settings/connect" component={NotificationSettings} />
-
-      <Route path="/settings/metadata" component={MetadataSettings} />
-
-      <Route path="/settings/tags" component={TagSettings} />
-
-      <Route path="/settings/general" component={GeneralSettingsConnector} />
-
-      <Route path="/settings/ui" component={UISettingsConnector} />
-
-      {/*
-        System
-      */}
-
-      <Route path="/system/status" component={Status} />
-
-      <Route path="/system/tasks" component={Tasks} />
-
-      <Route path="/system/backup" component={BackupsConnector} />
-
-      <Route path="/system/updates" component={Updates} />
-
-      <Route path="/system/events" component={LogsTableConnector} />
-
-      <Route path="/system/logs/files" component={Logs} />
-
-      {/*
-        Not Found
-      */}
-
-      <Route path="*" component={NotFound} />
-    </Switch>
+        <Route path="*" component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
