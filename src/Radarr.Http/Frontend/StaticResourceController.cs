@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Net.Http.Headers;
 using NLog;
-using Radarr.Http.Extensions;
 using Radarr.Http.Frontend.Mappers;
 
 namespace Radarr.Http.Frontend
@@ -77,7 +76,13 @@ namespace Radarr.Http.Frontend
                 {
                     if ((result as FileResult)?.ContentType == "text/html")
                     {
-                        Response.Headers.DisableCache();
+                        // A short freshness window instead of no-store: return visits within
+                        // a minute skip the document round trip, while upgrades still show up
+                        // at most a minute late.
+                        Response.Headers.Remove("Last-Modified");
+                        Response.Headers["Cache-Control"] = "private, max-age=60";
+                        Response.Headers.Remove("Expires");
+                        Response.Headers.Remove("Pragma");
                     }
 
                     return result;
