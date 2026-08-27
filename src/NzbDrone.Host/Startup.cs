@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using DryIoc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -72,6 +74,11 @@ namespace NzbDrone.Host
             services.AddRouting(options => options.LowercaseUrls = true);
 
             services.AddResponseCompression(options => options.EnableForHttps = true);
+
+            // The default dynamic compression level is the weakest; a denser level
+            // meaningfully shrinks large JSON payloads for a small CPU cost.
+            services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
+            services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
 
             services.AddCors(options =>
             {
