@@ -287,6 +287,7 @@ namespace NzbDrone.Host
             app.UseMiddleware<CacheHeaderMiddleware>();
             app.UseMiddleware<IfModifiedMiddleware>();
             app.UseMiddleware<BufferingMiddleware>(new List<string> { "/api/v3/command" });
+            app.UseMiddleware<ConditionalGetMiddleware>();
 
             app.UseWebSockets();
 
